@@ -1,5 +1,0 @@
-2023/04/04 23:09:58 Received {c0 n0 {"type":"init","node_id":"n0","node_ids":["n0"],"msg_id":1}}
-2023/04/04 23:09:58 Node n0 initialized
-2023/04/04 23:09:58 Sent {"src":"n0","dest":"c0","body":{"in_reply_to":1,"type":"init_ok"}}
-2023/04/04 23:09:58 Received {c2 n0 {"echo":"Please echo 59","type":"echo","msg_id":1}}
-2023/04/04 23:09:58 Sent {"src":"n0","dest":"c2","body":{"echo":"Please echo 59","in_reply_to":1,"msg_id":1,"type":"echo_ok"}}
