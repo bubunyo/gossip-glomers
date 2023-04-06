@@ -11,6 +11,7 @@ import (
 
 func main() {
 	n := maelstrom.NewNode()
+	// Update the message type to return back.
 	g := NewIdGenerator()
 	n.Handle("generate", func(msg maelstrom.Message) error {
 		// Unmarshal the message body as an loosely-typed map.
@@ -18,12 +19,17 @@ func main() {
 		if err := json.Unmarshal(msg.Body, &body); err != nil {
 			return err
 		}
-		ns := strings.Replace(msg.Dest, "n", "", 1)
+
+		nid := n.ID()
+		ns := strings.ReplaceAll(nid, "n", "")
+		if nid == "" {
+			log.Fatalf("node id cannot be empty. NodeId=%s, nids=%v", n.ID(), n.NodeIDs())
+		}
 		nn, err := strconv.Atoi(ns)
 		if err != nil {
-			return err
+			log.Fatal(err)
 		}
-		// Update the message type to return back.
+
 		body["type"] = "generate_ok"
 		body["id"] = g.GenerateId(nn)
 

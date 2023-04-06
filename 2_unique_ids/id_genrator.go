@@ -1,7 +1,7 @@
 package main
 
 import (
-	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -35,22 +35,23 @@ Auto Inc Seq No: [10 bits] Ever increase counter per ig generator instance.
 */
 
 type IdGenerator struct {
-	m          sync.Mutex
-	autoIncSeq int64
+	// nid        int
+	autoIncSeq uint64
 }
 
 func NewIdGenerator() *IdGenerator {
-	return &IdGenerator{}
+	return &IdGenerator{
+		// nid: nid + 1
+	}
 }
 
-func (g *IdGenerator) GenerateId(serverId int) int64 {
-	now := time.Now().UnixMilli() - EPOCH
+func (g *IdGenerator) GenerateId(nid int) uint64 {
+	now := uint64(time.Now().UnixMilli() - EPOCH)
 	id := now << (TIMESTAMP_BIT_SHIFT)
-	shardId := int64(serverId % MAX_SHARD_COUNT)
-	id |= shardId << (SHARD_ID_BIT_SHIFT)
-	g.m.Lock()
-	id |= g.autoIncSeq % AUT0_SEQ_MOD
-	g.autoIncSeq += 1
-	g.m.Unlock()
+	shardId := int64(nid % MAX_SHARD_COUNT)
+	id |= uint64(shardId << (SHARD_ID_BIT_SHIFT))
+	seq := atomic.AddUint64(&g.autoIncSeq, 1)
+	// log.Println(">>>>>>>>>>>>>", seq)
+	id |= uint64(seq % AUT0_SEQ_MOD)
 	return id
 }
