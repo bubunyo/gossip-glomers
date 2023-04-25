@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"log"
+	"os"
 	"strconv"
 	"strings"
 
@@ -11,6 +12,7 @@ import (
 
 func main() {
 	n := maelstrom.NewNode()
+	log.SetOutput(os.Stderr)
 	// Update the message type to return back.
 	g := NewIdGenerator()
 	n.Handle("generate", func(msg maelstrom.Message) error {
