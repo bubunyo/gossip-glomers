@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"sync"
+	"sync/atomic"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -49,32 +49,21 @@ func TestUniqueId(t *testing.T) {
 	printChecker()
 }
 
-type timeGenTester struct {
-	m       sync.Mutex
-	counter uint64
-}
+type timeGenTester struct{}
 
 func (g *timeGenTester) CustomEpoch() uint64 {
-	g.m.Lock()
-	g.m.Unlock()
-	n := g.counter
-	if n%2 == 0 {
-		n -= 1
-	}
-	// fmt.Println(">>>>>>>>>>> nnnn", n)
-	g.counter += 1
-	return n
+	return 1257894000000
 }
 
 func TestIdGenerationLogic(t *testing.T) {
 
 	ig := &IdGenerator{
-		autoIncSeq: 0,
-		timeGen:    &timeGenTester{counter: 0},
-		seqMod:     3,
+		autoIncSeq: atomic.Int64{},
+		timeGen:    &timeGenTester{},
+		seqMod:     AUT0_SEQ_MOD,
 	}
 
-	for i := 0; i < 10; i++ {
-		fmt.Println(">>>>>>>>>>>>", ig.GenerateId(0))
+	for i := 0; i < 1; i++ {
+		fmt.Println(">>>>>>>>>>>>", ig.GenerateId(MAX_SHARD_COUNT))
 	}
 }
