@@ -1,7 +1,8 @@
 package main
 
 import (
-	"sync"
+	"log"
+	"os"
 	"sync/atomic"
 	"time"
 )
@@ -11,8 +12,8 @@ const (
 	TIMESTAMP_BITS      = 41
 	SHARD_BITS          = 5
 	AUTO_SEQ_MOD_BITS   = 18
-	MAX_SHARD_COUNT     = (1 << SHARD_BITS) - 1        // there can only be 2^13 number of shards
-	AUT0_SEQ_MOD        = (1 << AUTO_SEQ_MOD_BITS) - 1 // sequence counters
+	MAX_SHARD_COUNT     = (1 << SHARD_BITS) - 1  // there can only be 2^13 number of shards
+	AUT0_SEQ_MOD        = 1 << AUTO_SEQ_MOD_BITS // sequence counters
 	TIMESTAMP_BIT_SHIFT = 64 - TIMESTAMP_BITS
 	SHARD_ID_BIT_SHIFT  = TIMESTAMP_BIT_SHIFT - SHARD_BITS
 )
@@ -33,37 +34,33 @@ Auto Inc Seq No: [13 bits] Ever increase counter per ig generator instance.
 
 type IdGenerator struct {
 	autoIncSeq atomic.Int64
-	seqMod     uint64
+	seqMod     int64
 	timeGen    TimeGenerator
 
-	mu sync.Mutex
-	lt uint64
+	lt int64
 }
 
 type TimeGenerator interface {
-	CustomEpoch() uint64
+	CustomEpoch() int64
 }
 
 type timeGen struct{}
 
-func (tg *timeGen) CustomEpoch() uint64 {
-	return uint64(time.Now().UnixMilli() - EPOCH)
+func (tg *timeGen) CustomEpoch() int64 {
+	return time.Now().UnixMilli() - EPOCH
 }
 
-func (tg *IdGenerator) GetTimeStamp() (ts uint64, seq uint64) {
-	tg.mu.Lock()
-	defer tg.mu.Unlock()
-	seq = uint64(tg.autoIncSeq.Add(1) % int64(tg.seqMod))
-	now := tg.timeGen.CustomEpoch()
+func (g *IdGenerator) GetTimeStamp() (ts int64, seq int64) {
+	seq = g.autoIncSeq.Add(1) % g.seqMod
+	now := g.timeGen.CustomEpoch()
 
-	for now == tg.lt && seq == 0 {
-		time.Sleep(1 * time.Millisecond)
-		now = tg.timeGen.CustomEpoch()
-		seq = uint64(tg.autoIncSeq.Add(1) % int64(tg.seqMod))
+	for now == g.lt && seq == 0 {
+		time.Sleep(time.Millisecond)
+		now = g.timeGen.CustomEpoch()
 	}
-	tg.lt = now
+	g.lt = now
 
-	return uint64(now), seq
+	return now, seq
 }
 
 func NewIdGenerator() *IdGenerator {
@@ -74,14 +71,22 @@ func NewIdGenerator() *IdGenerator {
 	}
 }
 
-func (g *IdGenerator) GenerateId(nid int) uint64 {
+func (g *IdGenerator) GenerateId(nid int) int64 {
+	f, err := os.OpenFile("test.log", os.O_CREATE, 0666)
+	if err != nil {
+		log.Fatalf("error opening file: %v", err)
+	}
+	defer f.Close()
+
+	log.SetOutput(f)
+
 	if nid > MAX_SHARD_COUNT {
 		// max shard count reached
 		return 0
 	}
 	now, seq := g.GetTimeStamp()
-	id := now << (TIMESTAMP_BIT_SHIFT)
-	id |= uint64(nid << (SHARD_ID_BIT_SHIFT))
+	id := now << TIMESTAMP_BIT_SHIFT
+	id |= int64(nid << SHARD_ID_BIT_SHIFT)
 	id |= seq
 	return id
 }

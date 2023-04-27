@@ -2,8 +2,8 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
-	"os"
 	"strconv"
 	"strings"
 
@@ -12,7 +12,7 @@ import (
 
 func main() {
 	n := maelstrom.NewNode()
-	log.SetOutput(os.Stderr)
+	// log.SetOutput(os.Stderr)
 	// Update the message type to return back.
 	g := NewIdGenerator()
 	n.Handle("generate", func(msg maelstrom.Message) error {
@@ -33,7 +33,7 @@ func main() {
 		}
 
 		body["type"] = "generate_ok"
-		body["id"] = g.GenerateId(nn)
+		body["id"] = fmt.Sprintf("%x", g.GenerateId(nn))
 
 		// Echo the original message back with the updated message type.
 		return n.Reply(msg, body)
