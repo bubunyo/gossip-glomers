@@ -9,6 +9,7 @@ import (
 
 func main() {
 	b := newStore[float64]()
+	t := newStore[string]()
 	n := maelstrom.NewNode()
 
 	n.Handle("broadcast", func(msg maelstrom.Message) error {
@@ -38,6 +39,8 @@ func main() {
 			return err
 		}
 		body["type"] = "topology_ok"
+		t.save(n.NodeIDs()...)
+
 		delete(body, "topology")
 		return n.Reply(msg, body)
 	})
