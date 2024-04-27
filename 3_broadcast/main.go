@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	b := newBroadcast()
+	b := newStore[float64]()
 	n := maelstrom.NewNode()
 
 	n.Handle("broadcast", func(msg maelstrom.Message) error {

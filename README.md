@@ -23,3 +23,15 @@ Setup instructions can also be found [here](https://fly.io/dist-sys/1/)
 ./run.sh 2_unique_ids unique-ids
 ```
 
+### Challenge #3: Unique ID Generation
+
+#### Single Node
+```sh
+./run.sh 3_broadcast broadcast 1 10
+```
+
+#### Multi Node
+```sh
+./run.sh 3_broadcast broadcast 5 10
+```
+
