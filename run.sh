@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+# set -e
 
 echo Running maelstrom for "$1" as "$2" ...
 cd $1
@@ -13,10 +13,10 @@ p=$1
 t=$2
 nc=$3
 r=$4
-shift 5
-./maelstrom/maelstrom test -w $t\
+shift 4
+./maelstrom/maelstrom test -w $t \
   --bin ./$p/$t   \
   --time-limit 30 \
   --node-count $nc \
-  --rate $r       \
-  "$@"
+  --rate $r ${@:+"$@"}
+  

@@ -22,7 +22,6 @@ func main() {
 		m := body["message"].(float64)
 		b.save(m)
 
-		// var wg sync.WaitGroup
 		// check if this is a propagation message
 		if body["propagation"] == nil {
 			propMsg := D{
@@ -31,11 +30,9 @@ func main() {
 				"propagation": true,
 			}
 			l := t.read()
-			// wg.Add(len(l) - 1)
 			for _, tt := range l {
 				if n.ID() != tt {
 					n.RPC(tt, propMsg, func(msg maelstrom.Message) error {
-						// wg.Done()
 						return nil
 					})
 				}
