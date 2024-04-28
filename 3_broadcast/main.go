@@ -7,6 +7,8 @@ import (
 	maelstrom "github.com/jepsen-io/maelstrom/demo/go"
 )
 
+type D map[string]any
+
 func main() {
 	b := newStore[float64]()
 	t := newStore[string]()
@@ -17,9 +19,33 @@ func main() {
 		if err := json.Unmarshal(msg.Body, &body); err != nil {
 			return err
 		}
-		b.save(body["message"].(float64))
+		m := body["message"].(float64)
+		b.save(m)
+
+		// var wg sync.WaitGroup
+		// check if this is a propagation message
+		if body["propagation"] == nil {
+			propMsg := D{
+				"type":        "broadcast",
+				"message":     m,
+				"propagation": true,
+			}
+			l := t.read()
+			// wg.Add(len(l) - 1)
+			for _, tt := range l {
+				if n.ID() != tt {
+					n.RPC(tt, propMsg, func(msg maelstrom.Message) error {
+						// wg.Done()
+						return nil
+					})
+				}
+			}
+		} else {
+			delete(body, "propagation")
+		}
 		delete(body, "message")
 		body["type"] = "broadcast_ok"
+		// wg.Wait()
 		return n.Reply(msg, body)
 	})
 

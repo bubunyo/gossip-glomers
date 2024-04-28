@@ -20,7 +20,7 @@ Setup instructions can also be found [here](https://fly.io/dist-sys/1/)
 ### Challenge #2: Unique ID Generation
 
 ```sh
-./run.sh 2_unique_ids unique-ids
+./run.sh 2_unique_ids unique-ids 3 --availability total --nemesis partition 
 ```
 
 ### Challenge #3: Unique ID Generation

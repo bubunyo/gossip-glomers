@@ -9,4 +9,14 @@ echo Compiling binary
 go mod tidy && go build -o $2
 echo Binary compile done
 cd ..
-./maelstrom/maelstrom test -w $2 --bin ./$1/$2 --time-limit 30 --rate ${4:-100000} --node-count ${3:-30} --availability total --nemesis partition
+p=$1
+t=$2
+nc=$3
+r=$4
+shift 5
+./maelstrom/maelstrom test -w $t\
+  --bin ./$p/$t   \
+  --time-limit 30 \
+  --node-count $nc \
+  --rate $r       \
+  "$@"
